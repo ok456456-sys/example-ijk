@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>나의 첫 실험 사이트</title>
+   <title>나의 첫 실험 사이트</title>
 </head>
 <body>
   <h1>테스트 성공!</h1>
