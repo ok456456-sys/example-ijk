@@ -19,9 +19,30 @@
       line-height: 1.6;
     }
 
+    /* 우측 상단 작은 방문자 수 배지 */
+    .visitor-badge {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      z-index: 100;
+      background-color: rgba(255, 255, 255, 0.94);
+      border: 1px solid #d1d5db;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #4b5563;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    .visitor-badge strong {
+      color: #2563eb;
+      font-weight: 700;
+    }
+
     .container {
       max-width: 520px;
-      margin: 0 auto;
+      margin: 20px auto 0 auto;
     }
 
     h1 {
@@ -106,6 +127,11 @@
   </style>
 </head>
 <body>
+  <!-- 우측 상단 오늘 / 전체 방문자 표시 -->
+  <div class="visitor-badge" aria-label="방문자 수">
+    오늘 <strong id="today-visitors">-</strong> · 전체 <strong id="total-visitors">-</strong>
+  </div>
+
   <div class="container">
     <h1>황순이의 조수 ijk의 연습실입니다.</h1>
     <p class="subtitle">간단한 계기 - 방법 - 소감문입니다.</p>
@@ -113,13 +139,13 @@
     <!-- 버튼 3개 목록 -->
     <div class="button-list">
       <button class="menu-btn active" onclick="showScreen(1, this)">
-        1. 첫 번째 버튼 — 만들게 된 계기
+1. 첫 번째 버튼 — 만들게 된 계기
       </button>
       <button class="menu-btn" onclick="showScreen(2, this)">
-        2. 두 번째 버튼 — 만든 방법
+2. 두 번째 버튼 — 만든 방법
       </button>
       <button class="menu-btn" onclick="showScreen(3, this)">
-        3. 세 번째 버튼 — 만들어 본 소감
+3. 세 번째 버튼 — 만들어 본 소감
       </button>
     </div>
 
@@ -133,7 +159,7 @@
   </div>
 
   <script>
-    // 각 버튼별 화면 데이터 (나중에 이 부분의 글자만 바꾸면 내용이 바뀝니다)
+    // 각 버튼별 화면 데이터
     const screens = {
       1: {
         badge: "word i",
@@ -153,17 +179,50 @@
     };
 
     function showScreen(number, clickedButton) {
-      // 모든 버튼에서 active 표시 제거 후 클릭한 버튼만 강조
       const buttons = document.querySelectorAll(".menu-btn");
       buttons.forEach(btn => btn.classList.remove("active"));
       clickedButton.classList.add("active");
 
-      // 선택한 번호에 맞는 내용으로 화면 교체
       const data = screens[number];
       document.getElementById("screen-badge").textContent = data.badge;
       document.getElementById("screen-title").textContent = data.title;
       document.getElementById("screen-message").textContent = data.message;
     }
+
+    // 한국 시간(KST) 기준 오늘 날짜 키 (예: 2026-11-25)
+    function getKstDateKey() {
+      const now = new Date();
+      const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+      return kstDate.toISOString().slice(0, 10);
+    }
+
+    function setVisitorDisplay(todayCount, totalCount) {
+      document.getElementById("today-visitors").textContent = todayCount;
+      document.getElementById("total-visitors").textContent = totalCount;
+    }
+
+    // 실제 접속자 수 집계 로직
+    // 외부 DB(Firebase Realtime Database 등)를 붙이면 여러 사람의 접속이 합산됩니다.
+    async function loadVisitorStats() {
+      const todayKey = getKstDateKey();
+      const sessionKey = "visited_" + todayKey;
+
+      // DB 미연결 상태에서는 내 브라우저 기준으로만 표시
+      let localTotal = Number(localStorage.getItem("ijk_total_visits") || "0");
+      let localToday = Number(localStorage.getItem("ijk_today_" + todayKey) || "0");
+
+      if (!sessionStorage.getItem(sessionKey)) {
+        localTotal += 1;
+        localToday += 1;
+        localStorage.setItem("ijk_total_visits", String(localTotal));
+        localStorage.setItem("ijk_today_" + todayKey, String(localToday));
+        sessionStorage.setItem(sessionKey, "1");
+      }
+
+      setVisitorDisplay(localToday, localTotal);
+    }
+
+    loadVisitorStats();
   </script>
 </body>
 </html>
